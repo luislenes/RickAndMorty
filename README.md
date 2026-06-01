@@ -8,7 +8,7 @@ Android application that consumes the [Rick and Morty API](https://rickandmortya
 
 | Character List | Character Detail |
 |---|---|
-| `CharacterListScreen` | `CharacterDetailScreen` |
+| ![Character List](screenshots/character_list.png) | ![Character Detail](screenshots/character_detail.png) |
 
 ---
 
@@ -51,6 +51,12 @@ Android application that consumes the [Rick and Morty API](https://rickandmortya
 |---|---|---|
 | **Koin** | 4.0.4 | DI framework with no annotation processing (no KSP/KAPT required), simplifying the build and reducing compile times. Its Kotlin DSL is readable and straightforward. The new `viewModelOf` in Koin 4.x handles `SavedStateHandle` automatically. |
 
+### Testing
+| Technology | Version | Justification |
+|---|---|---|
+| **MockK** | 1.14.0 | Idiomatic Kotlin mocking library. Supports `suspend fun` natively via `coEvery`/`coVerify`, unlike Mockito which requires additional adapters. |
+| **kotlinx-coroutines-test** | 1.10.1 | Provides `runTest` to execute coroutine-based code synchronously in unit tests, with a virtual time scheduler for precise control. |
+
 ---
 
 ## Project Structure
@@ -87,18 +93,36 @@ com.luislenes.rickandmorty/
 │   ├── CharacterViewModel.kt
 │   ├── navigation/
 │   │   ├── Screen.kt                   # Route definitions
-│   │   └── AppNavGraph.kt              # Main NavHost
+│   │   └── AppNavGraph.kt              # Main NavHost + theme root
 │   ├── ui/
-│   │   ├── CharacterListScreen.kt
+│   │   ├── CharacterListScreen.kt      # List screen + state previews
+│   │   ├── theme/
+│   │   │   └── Color.kt               # Palette + StatusBadge color tokens
 │   │   └── components/
-│   │       ├── StatusBadge.kt          # Reusable component
-│   │       └── StatusBadgeColorProvider.kt
+│   │       ├── StatusBadge.kt          # Reusable composable
+│   │       └── StatusBadgeColorProvider.kt  # Color logic isolated from UI
 │   └── detail/
 │       ├── CharacterDetailUiState.kt
 │       ├── CharacterDetailViewModel.kt
-│       └── CharacterDetailScreen.kt
+│       └── CharacterDetailScreen.kt    # Detail screen + state previews
 │
-└── RickAndMortyApp.kt                  # Application with Koin bootstrap
+├── RickAndMortyApp.kt                  # Application with Koin bootstrap
+│
+└── res/values/
+    ├── strings.xml                     # All user-visible strings
+    └── dimens.xml                      # Semantic dimension tokens
+```
+
+### Test structure
+
+```
+src/test/
+└── com.luislenes.rickandmorty/
+    ├── data/repository/
+    │   └── CharacterRepositoryImplTest.kt   # 11 tests: API calls + DTO mapper
+    └── model/usecase/
+        ├── GetCharactersUseCaseTest.kt       # 4 tests: delegation + result propagation
+        └── GetCharacterByIdUseCaseTest.kt    # 4 tests: id routing + isolation
 ```
 
 ---
@@ -125,20 +149,37 @@ The API returns the first page (~20 characters). Integrating `androidx.paging:pa
 ### 2. Local cache with Room
 Adding a Room database between the API and the repository, implementing an **offline-first** pattern: show cached data immediately and refresh in the background. This improves the offline experience and reduces repeated network calls.
 
-### 3. Unit and integration tests
-- `CharacterViewModel`: test with `TestCoroutineDispatcher` and a fake repository.
-- `GetCharactersUseCase`: verify it correctly delegates to the repository.
-- `CharacterRepositoryImpl`: test the DTO → domain mapper.
-- UI: composable tests with `ComposeTestRule` for all 3 `UiState` states.
+### 3. Complete the test coverage
+Data and domain layers are already covered with unit tests (19 tests). The remaining layers:
+- **ViewModel**: test `CharacterViewModel` and `CharacterDetailViewModel` using a fake repository and asserting `StateFlow` state transitions (`Loading → Success`, `Loading → Error`).
+- **UI (Compose)**: use `ComposeTestRule` to assert that each screen correctly renders its 3 `UiState` states — loading indicator, error message with retry button, and the populated list/detail.
 
-### 4. More granular error handling
-Currently any `Throwable` is caught. An improvement would be to type domain errors with a sealed class `AppError` (e.g., `NetworkError`, `TimeoutError`, `ServerError`) to show more descriptive user messages and differentiated retry policies.
+### 4. Inject the CoroutineDispatcher into the ViewModel
+Currently `viewModelScope` uses `Dispatchers.Main` internally. Injecting an explicit `CoroutineDispatcher` via Koin (`Dispatchers.IO` in production, `UnconfinedTestDispatcher` in tests) makes ViewModel tests fully deterministic and removes the dependency on Android's main looper.
 
-### 5. Filters and search
-The API supports query params (`?name=`, `?status=`, `?species=`). Adding a search bar and filter chips directly in the list would be the next natural feature, reusing the `CharacterRepository` with optional parameters.
+### 5. More granular error handling
+Currently any `Throwable` is caught and its `message` surfaced directly. Typing domain errors with a sealed class `AppError` (e.g., `NetworkError`, `TimeoutError`, `ServerError`) would allow the UI to show tailored messages per error kind and implement differentiated retry or fallback policies without changing the repository contract.
 
-### 6. Inject the Dispatcher into the ViewModel
-To make testing easier, the `CoroutineDispatcher` should be injected via Koin (`Dispatchers.IO` in production, `TestCoroutineDispatcher` in tests) instead of relying on `viewModelScope`'s default dispatcher.
+### 6. Filters and search
+The API supports query params (`?name=`, `?status=`, `?species=`). Adding a search bar and filter chips in the list screen would be the next natural feature, reusing `CharacterRepository` with optional parameters and debouncing input with `Flow.debounce`.
 
-### 7. ProGuard / R8 for production
-Enable `isMinifyEnabled = true` in the `release` build type and add the necessary ProGuard rules for Gson, Retrofit and Koin to reduce APK size.
+### 7. Dark theme support
+The app currently uses only a light color scheme. Defining a dark variant in `Theme.kt` and testing it with `@Preview(uiMode = UI_MODE_NIGHT_YES)` would cover a significant portion of users who use system dark mode.
+
+### 8. ProGuard / R8 for production
+Enable `isMinifyEnabled = true` in the `release` build type and add the necessary ProGuard rules for Gson, Retrofit and Koin to reduce APK size and obfuscate class names.
+
+---
+
+## AI-Assisted Development
+
+This project was developed with the assistance of **GitHub Copilot** as a coding partner. AI collaboration covered the following areas:
+
+| Area | AI contribution |
+|---|---|
+| **Boilerplate generation** | Generated repetitive but critical code: Koin modules, Retrofit interface, DTO data classes with `@SerializedName` annotations and the `toDomain()` mapper. |
+| **Unit tests** | Wrote the full test suite for the data layer (`CharacterRepositoryImplTest`) and domain layer (`GetCharactersUseCaseTest`, `GetCharacterByIdUseCaseTest`), including edge cases like empty lists, exception propagation and call count verification with MockK. |
+| **README authoring** | Drafted and iteratively updated this document, including technology justifications, data flow diagram, project structure tree and improvement suggestions. |
+
+> All suggestions were reviewed, discussed and approved before being applied. The architecture decisions, naming conventions and technical criteria reflect the developer's judgment — AI acted as an accelerator, not a decision-maker.
+
