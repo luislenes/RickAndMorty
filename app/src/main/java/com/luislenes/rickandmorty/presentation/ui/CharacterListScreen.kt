@@ -13,12 +13,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
+import com.luislenes.rickandmorty.R
 import com.luislenes.rickandmorty.model.Character
 import com.luislenes.rickandmorty.presentation.CharacterViewModel
 import com.luislenes.rickandmorty.presentation.CharactersUiState
@@ -60,7 +63,7 @@ private fun CharacterTopBar() {
     TopAppBar(
         title = {
             Text(
-                text = "Rick & Morty",
+                text = stringResource(R.string.app_bar_title),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
@@ -84,15 +87,15 @@ private fun ErrorContent(message: String, onRetry: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(24.dp),
+            .padding(dimensionResource(R.dimen.error_content_padding)),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text(text = "⚠️ Oops!", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+        Text(text = stringResource(R.string.error_title), style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(8.dp))
         Text(text = message, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(modifier = Modifier.height(24.dp))
-        Button(onClick = onRetry) { Text("Retry") }
+        Button(onClick = onRetry) { Text(stringResource(R.string.action_retry)) }
     }
 }
 
@@ -120,8 +123,8 @@ fun CharacterCard(character: Character, onClick: () -> Unit = {}) {
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick),
-        shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        shape = RoundedCornerShape(dimensionResource(R.dimen.card_corner_radius)),
+        elevation = CardDefaults.cardElevation(defaultElevation = dimensionResource(R.dimen.card_elevation))
     ) {
         Row(
             modifier = Modifier
@@ -131,10 +134,10 @@ fun CharacterCard(character: Character, onClick: () -> Unit = {}) {
         ) {
             AsyncImage(
                 model = character.imageUrl,
-                contentDescription = "${character.name} avatar",
+                contentDescription = stringResource(R.string.content_desc_character_avatar, character.name),
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
-                    .size(80.dp)
+                    .size(dimensionResource(R.dimen.character_avatar_size))
                     .clip(CircleShape)
             )
             Spacer(modifier = Modifier.width(16.dp))

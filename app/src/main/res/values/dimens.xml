@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Cards -->
+    <dimen name="card_corner_radius">16dp</dimen>
+    <dimen name="card_elevation">4dp</dimen>
+
+    <!-- Character list -->
+    <dimen name="character_avatar_size">80dp</dimen>
+
+    <!-- Character detail -->
+    <dimen name="character_detail_image_size">200dp</dimen>
+
+    <!-- Error screen -->
+    <dimen name="error_content_padding">24dp</dimen>
+
+    <!-- Status badge -->
+    <dimen name="status_badge_dot_size">6dp</dimen>
+    <dimen name="status_badge_padding_horizontal">8dp</dimen>
+    <dimen name="status_badge_padding_vertical">3dp</dimen>
+</resources>
+

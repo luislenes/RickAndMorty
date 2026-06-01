@@ -1,3 +1,15 @@
 <resources>
     <string name="app_name">RickAndMorty</string>
+    <string name="app_bar_title">Rick &amp; Morty</string>
+    <string name="error_title">⚠️ Oops!</string>
+    <string name="action_retry">Retry</string>
+    <string name="content_desc_back">Back</string>
+    <string name="content_desc_character_avatar">%s avatar</string>
+    <string name="content_desc_character_image">%s image</string>
+    <string name="label_species">Species</string>
+    <string name="label_gender">Gender</string>
+    <string name="label_type">Type</string>
+    <string name="label_origin">Origin</string>
+    <string name="label_location">Location</string>
+    <string name="label_empty_value">—</string>
 </resources>

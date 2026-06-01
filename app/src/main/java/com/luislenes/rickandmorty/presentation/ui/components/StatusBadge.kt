@@ -13,8 +13,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
+import com.luislenes.rickandmorty.R
 
 @Composable
 fun StatusBadge(status: String) {
@@ -22,14 +23,17 @@ fun StatusBadge(status: String) {
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        horizontalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.status_badge_dot_size)),
         modifier = Modifier
             .background(color = colors.background, shape = RoundedCornerShape(50))
-            .padding(horizontal = 8.dp, vertical = 3.dp)
+            .padding(
+                horizontal = dimensionResource(R.dimen.status_badge_padding_horizontal),
+                vertical = dimensionResource(R.dimen.status_badge_padding_vertical)
+            )
     ) {
         Box(
             modifier = Modifier
-                .size(6.dp)
+                .size(dimensionResource(R.dimen.status_badge_dot_size))
                 .background(color = colors.content, shape = CircleShape)
         )
         Text(

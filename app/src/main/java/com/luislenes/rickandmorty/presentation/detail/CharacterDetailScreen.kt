@@ -13,10 +13,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
+import com.luislenes.rickandmorty.R
 import com.luislenes.rickandmorty.model.Character
 import com.luislenes.rickandmorty.presentation.ui.components.StatusBadge
 import org.koin.androidx.compose.koinViewModel
@@ -70,7 +73,7 @@ private fun CharacterDetailTopBar(title: String, onBackClick: () -> Unit) {
             IconButton(onClick = onBackClick) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Back"
+                    contentDescription = stringResource(R.string.content_desc_back)
                 )
             }
         },
@@ -93,15 +96,15 @@ private fun ErrorContent(message: String, onRetry: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(24.dp),
+            .padding(dimensionResource(R.dimen.error_content_padding)),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text(text = "⚠️ Oops!", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+        Text(text = stringResource(R.string.error_title), style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(8.dp))
         Text(text = message, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(modifier = Modifier.height(24.dp))
-        Button(onClick = onRetry) { Text("Retry") }
+        Button(onClick = onRetry) { Text(stringResource(R.string.action_retry)) }
     }
 }
 
@@ -116,11 +119,11 @@ private fun DetailContent(character: Character) {
     ) {
         AsyncImage(
             model = character.imageUrl,
-            contentDescription = "${character.name} image",
+            contentDescription = stringResource(R.string.content_desc_character_image, character.name),
             contentScale = ContentScale.Crop,
             modifier = Modifier
-                .size(200.dp)
-                .clip(RoundedCornerShape(16.dp))
+                .size(dimensionResource(R.dimen.character_detail_image_size))
+                .clip(RoundedCornerShape(dimensionResource(R.dimen.card_corner_radius)))
         )
         Spacer(modifier = Modifier.height(16.dp))
         Text(
@@ -139,20 +142,20 @@ private fun DetailContent(character: Character) {
 private fun InfoCard(character: Character) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp)
+        shape = RoundedCornerShape(dimensionResource(R.dimen.card_corner_radius))
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            InfoRow(label = "Species",  value = character.species)
-            InfoRow(label = "Gender",   value = character.gender)
+            InfoRow(label = stringResource(R.string.label_species),  value = character.species)
+            InfoRow(label = stringResource(R.string.label_gender),   value = character.gender)
             if (character.type.isNotBlank()) {
-                InfoRow(label = "Type", value = character.type)
+                InfoRow(label = stringResource(R.string.label_type), value = character.type)
             }
             HorizontalDivider()
-            InfoRow(label = "Origin",   value = character.origin)
-            InfoRow(label = "Location", value = character.location)
+            InfoRow(label = stringResource(R.string.label_origin),   value = character.origin)
+            InfoRow(label = stringResource(R.string.label_location), value = character.location)
         }
     }
 }
@@ -171,10 +174,9 @@ private fun InfoRow(label: String, value: String) {
             fontWeight = FontWeight.Medium
         )
         Text(
-            text = value.ifBlank { "—" },
+            text = value.ifBlank { stringResource(R.string.label_empty_value) },
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.SemiBold
         )
     }
 }
-
