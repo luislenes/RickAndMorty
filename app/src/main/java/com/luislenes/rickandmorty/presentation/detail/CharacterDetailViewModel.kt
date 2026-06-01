@@ -29,7 +29,7 @@ class CharacterDetailViewModel(
             _uiState.value = CharacterDetailUiState.Loading
             getCharacterByIdUseCase(characterId)
                 .onSuccess { _uiState.value = CharacterDetailUiState.Success(it) }
-                .onFailure { _uiState.value = CharacterDetailUiState.Error(it.message ?: "Unexpected error.") }
+                .onFailure { _uiState.value = CharacterDetailUiState.Error(it.message.orEmpty()) }
         }
     }
 }

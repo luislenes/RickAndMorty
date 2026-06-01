@@ -12,4 +12,7 @@
     <string name="label_origin">Origin</string>
     <string name="label_location">Location</string>
     <string name="label_empty_value">—</string>
+    <string name="error_unknown">Unexpected error. Please try again.</string>
+    <string name="error_preview_connection">Could not connect to the server. Check your internet connection.</string>
+    <string name="error_preview_detail">Failed to load character details. Please try again.</string>
 </resources>

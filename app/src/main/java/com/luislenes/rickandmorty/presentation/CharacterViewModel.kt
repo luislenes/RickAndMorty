@@ -24,7 +24,7 @@ class CharacterViewModel(
             _uiState.value = CharactersUiState.Loading
             getCharactersUseCase()
                 .onSuccess { _uiState.value = CharactersUiState.Success(it) }
-                .onFailure { _uiState.value = CharactersUiState.Error(it.message ?: "Unexpected error. Please try again.") }
+                .onFailure { _uiState.value = CharactersUiState.Error(it.message.orEmpty()) }
         }
     }
 }

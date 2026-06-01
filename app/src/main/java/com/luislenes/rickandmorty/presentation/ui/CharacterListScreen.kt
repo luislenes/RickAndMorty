@@ -93,7 +93,7 @@ private fun ErrorContent(message: String, onRetry: () -> Unit) {
     ) {
         Text(text = stringResource(R.string.error_title), style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(8.dp))
-        Text(text = message, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(text = message.ifBlank { stringResource(R.string.error_unknown) }, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(modifier = Modifier.height(24.dp))
         Button(onClick = onRetry) { Text(stringResource(R.string.action_retry)) }
     }
@@ -188,7 +188,7 @@ private fun CharacterListLoadingPreview() {
 private fun CharacterListErrorPreview() {
     RickAndMortyTheme {
         ErrorContent(
-            message = "Could not connect to the server. Check your internet connection.",
+            message = stringResource(R.string.error_preview_connection),
             onRetry = {}
         )
     }
