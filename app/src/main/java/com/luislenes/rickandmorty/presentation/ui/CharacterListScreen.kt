@@ -208,24 +208,9 @@ private fun CharacterListSuccessPreview() {
 
 @Preview(name = "Card — Alive", showBackground = true)
 @Composable
-private fun CharacterCardAlivePreview() {
+private fun CharacterCardPreview() {
     RickAndMortyTheme {
         CharacterCard(character = previewCharacters[0])
     }
 }
 
-@Preview(name = "Card — Dead", showBackground = true)
-@Composable
-private fun CharacterCardDeadPreview() {
-    RickAndMortyTheme {
-        CharacterCard(character = previewCharacters[2])
-    }
-}
-
-@Preview(name = "Card — Unknown", showBackground = true)
-@Composable
-private fun CharacterCardUnknownPreview() {
-    RickAndMortyTheme {
-        CharacterCard(character = previewCharacters[3])
-    }
-}
