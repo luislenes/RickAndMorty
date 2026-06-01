@@ -162,16 +162,70 @@ fun CharacterCard(character: Character, onClick: () -> Unit = {}) {
     }
 }
 
-@Preview(showBackground = true)
+// ---------------------------------------------------------------------------
+// Preview data
+// ---------------------------------------------------------------------------
+
+private val previewCharacters = listOf(
+    Character(1, "Rick Sanchez",  "Alive",   "Human",       "", "Male",   "", "Earth (C-137)", "Citadel of Ricks"),
+    Character(2, "Morty Smith",   "Alive",   "Human",       "", "Male",   "", "Earth (C-137)", "Earth (C-137)"),
+    Character(3, "Birdperson",    "Dead",    "Bird-Person", "", "Male",   "", "Bird World",    "Tammy's Ship"),
+    Character(4, "Schleemypants", "unknown", "Schleem",     "", "unknown","", "unknown",       "unknown"),
+)
+
+// ---------------------------------------------------------------------------
+// List states
+// ---------------------------------------------------------------------------
+
+@Preview(name = "List — Loading", showBackground = true)
 @Composable
-private fun CharacterCardPreview() {
+private fun CharacterListLoadingPreview() {
+    RickAndMortyTheme { LoadingContent() }
+}
+
+@Preview(name = "List — Error", showBackground = true)
+@Composable
+private fun CharacterListErrorPreview() {
     RickAndMortyTheme {
-        CharacterCard(
-            character = Character(
-                id = 1, name = "Rick Sanchez", status = "Alive",
-                species = "Human", imageUrl = "", gender = "Male",
-                type = "", origin = "Earth (C-137)", location = "Citadel of Ricks"
-            )
+        ErrorContent(
+            message = "Could not connect to the server. Check your internet connection.",
+            onRetry = {}
         )
+    }
+}
+
+@Preview(name = "List — Success", showBackground = true)
+@Composable
+private fun CharacterListSuccessPreview() {
+    RickAndMortyTheme {
+        CharacterList(characters = previewCharacters, onCharacterClick = {})
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Card states
+// ---------------------------------------------------------------------------
+
+@Preview(name = "Card — Alive", showBackground = true)
+@Composable
+private fun CharacterCardAlivePreview() {
+    RickAndMortyTheme {
+        CharacterCard(character = previewCharacters[0])
+    }
+}
+
+@Preview(name = "Card — Dead", showBackground = true)
+@Composable
+private fun CharacterCardDeadPreview() {
+    RickAndMortyTheme {
+        CharacterCard(character = previewCharacters[2])
+    }
+}
+
+@Preview(name = "Card — Unknown", showBackground = true)
+@Composable
+private fun CharacterCardUnknownPreview() {
+    RickAndMortyTheme {
+        CharacterCard(character = previewCharacters[3])
     }
 }

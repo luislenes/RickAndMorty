@@ -16,12 +16,14 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.luislenes.rickandmorty.R
 import com.luislenes.rickandmorty.model.Character
 import com.luislenes.rickandmorty.presentation.ui.components.StatusBadge
+import com.luislenes.rickandmorty.presentation.ui.theme.RickAndMortyTheme
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -180,3 +182,65 @@ private fun InfoRow(label: String, value: String) {
         )
     }
 }
+
+// ---------------------------------------------------------------------------
+// Preview data
+// ---------------------------------------------------------------------------
+
+private val previewCharacterAlive = Character(
+    id = 1, name = "Rick Sanchez", status = "Alive", species = "Human",
+    imageUrl = "", gender = "Male", type = "", origin = "Earth (C-137)",
+    location = "Citadel of Ricks"
+)
+
+private val previewCharacterDead = Character(
+    id = 2, name = "Birdperson", status = "Dead", species = "Bird-Person",
+    imageUrl = "", gender = "Male", type = "", origin = "Bird World",
+    location = "Tammy's Ship"
+)
+
+private val previewCharacterWithType = Character(
+    id = 3, name = "Alien Morty", status = "unknown", species = "Human",
+    imageUrl = "", gender = "Male", type = "Alien clone", origin = "unknown",
+    location = "Citadel of Ricks"
+)
+
+// ---------------------------------------------------------------------------
+// Detail states
+// ---------------------------------------------------------------------------
+
+@Preview(name = "Detail — Loading", showBackground = true)
+@Composable
+private fun CharacterDetailLoadingPreview() {
+    RickAndMortyTheme { LoadingContent() }
+}
+
+@Preview(name = "Detail — Error", showBackground = true)
+@Composable
+private fun CharacterDetailErrorPreview() {
+    RickAndMortyTheme {
+        ErrorContent(
+            message = "Failed to load character details. Please try again.",
+            onRetry = {}
+        )
+    }
+}
+
+@Preview(name = "Detail — Alive character", showBackground = true)
+@Composable
+private fun CharacterDetailAlivePreview() {
+    RickAndMortyTheme { DetailContent(character = previewCharacterAlive) }
+}
+
+@Preview(name = "Detail — Dead character", showBackground = true)
+@Composable
+private fun CharacterDetailDeadPreview() {
+    RickAndMortyTheme { DetailContent(character = previewCharacterDead) }
+}
+
+@Preview(name = "Detail — Unknown with Type", showBackground = true)
+@Composable
+private fun CharacterDetailUnknownWithTypePreview() {
+    RickAndMortyTheme { DetailContent(character = previewCharacterWithType) }
+}
+
