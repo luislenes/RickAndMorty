@@ -11,8 +11,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -20,11 +18,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil3.compose.AsyncImage
 import com.luislenes.rickandmorty.R
 import com.luislenes.rickandmorty.model.Character
 import com.luislenes.rickandmorty.presentation.CharacterViewModel
 import com.luislenes.rickandmorty.presentation.CharactersUiState
+import com.luislenes.rickandmorty.presentation.ui.components.CharacterImage
 import com.luislenes.rickandmorty.presentation.ui.components.StatusBadge
 import com.luislenes.rickandmorty.presentation.ui.theme.RickAndMortyTheme
 import org.koin.androidx.compose.koinViewModel
@@ -132,13 +130,11 @@ fun CharacterCard(character: Character, onClick: () -> Unit = {}) {
                 .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            AsyncImage(
-                model = character.imageUrl,
+            CharacterImage(
+                imageUrl = character.imageUrl,
                 contentDescription = stringResource(R.string.content_desc_character_avatar, character.name),
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .size(dimensionResource(R.dimen.character_avatar_size))
-                    .clip(CircleShape)
+                size = dimensionResource(R.dimen.character_avatar_size),
+                shape = CircleShape
             )
             Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {

@@ -14,3 +14,9 @@ val StatusAlive = Color(0xFF2E7D32)
 val StatusDead = Color(0xFFC62828)
 val StatusUnknown = Color(0xFF757575)
 val StatusBadgeText = Color.White
+
+val ImagePlaceholderBg = Color(0xFFE0E0E0)
+val ImagePlaceholderShimmer = Color(0xFFF5F5F5)
+val ImageErrorBg = Color(0xFFBDBDBD)
+val ImageErrorIcon = Color(0xFF757575)
+

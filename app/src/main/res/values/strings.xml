@@ -6,6 +6,7 @@
     <string name="content_desc_back">Back</string>
     <string name="content_desc_character_avatar">%s avatar</string>
     <string name="content_desc_character_image">%s image</string>
+    <string name="content_desc_image_error">Image could not be loaded</string>
     <string name="label_species">Species</string>
     <string name="label_gender">Gender</string>
     <string name="label_type">Type</string>
