@@ -23,6 +23,7 @@ import com.luislenes.rickandmorty.model.Character
 import com.luislenes.rickandmorty.presentation.CharacterViewModel
 import com.luislenes.rickandmorty.presentation.CharactersUiState
 import com.luislenes.rickandmorty.presentation.ui.components.CharacterImage
+import com.luislenes.rickandmorty.presentation.ui.components.CharacterListSkeleton
 import com.luislenes.rickandmorty.presentation.ui.components.StatusBadge
 import com.luislenes.rickandmorty.presentation.ui.theme.RickAndMortyTheme
 import org.koin.androidx.compose.koinViewModel
@@ -41,7 +42,7 @@ fun CharacterListScreen(
                 .padding(innerPadding)
         ) {
             when (val state = uiState) {
-                is CharactersUiState.Loading -> LoadingContent()
+                is CharactersUiState.Loading -> CharacterListSkeleton()
                 is CharactersUiState.Error   -> ErrorContent(
                     message = state.message,
                     onRetry = viewModel::fetchCharacters
@@ -73,12 +74,6 @@ private fun CharacterTopBar() {
     )
 }
 
-@Composable
-private fun LoadingContent() {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        CircularProgressIndicator()
-    }
-}
 
 @Composable
 private fun ErrorContent(message: String, onRetry: () -> Unit) {
@@ -176,7 +171,7 @@ private val previewCharacters = listOf(
 @Preview(name = "List — Loading", showBackground = true)
 @Composable
 private fun CharacterListLoadingPreview() {
-    RickAndMortyTheme { LoadingContent() }
+    RickAndMortyTheme { CharacterListSkeleton() }
 }
 
 @Preview(name = "List — Error", showBackground = true)

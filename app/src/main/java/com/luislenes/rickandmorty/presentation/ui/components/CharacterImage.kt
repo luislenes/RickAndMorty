@@ -1,10 +1,5 @@
 package com.luislenes.rickandmorty.presentation.ui.components
 
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,7 +10,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.BrokenImage
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -30,8 +24,6 @@ import coil3.compose.SubcomposeAsyncImageContent
 import com.luislenes.rickandmorty.R
 import com.luislenes.rickandmorty.presentation.ui.theme.ImageErrorBg
 import com.luislenes.rickandmorty.presentation.ui.theme.ImageErrorIcon
-import com.luislenes.rickandmorty.presentation.ui.theme.ImagePlaceholderBg
-import com.luislenes.rickandmorty.presentation.ui.theme.ImagePlaceholderShimmer
 
 @Composable
 fun CharacterImage(
@@ -49,7 +41,12 @@ fun CharacterImage(
             .size(size)
             .clip(shape),
         loading = {
-            ShimmerBox(shape = shape)
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(shape)
+                    .background(shimmerBrush())
+            )
         },
         error = {
             ErrorBox(shape = shape)
@@ -58,32 +55,6 @@ fun CharacterImage(
             SubcomposeAsyncImageContent()
         }
     )
-}
-
-@Composable
-private fun ShimmerBox(shape: Shape) {
-    val transition = rememberInfiniteTransition(label = "shimmer")
-    val alpha by transition.animateFloat(
-        initialValue = 0.4f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 800),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "shimmer_alpha"
-    )
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .clip(shape)
-            .background(ImagePlaceholderBg.copy(alpha = alpha))
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(ImagePlaceholderShimmer.copy(alpha = alpha * 0.5f))
-        )
-    }
 }
 
 @Composable
@@ -106,7 +77,12 @@ private fun ErrorBox(shape: Shape) {
 @Preview(showBackground = true, name = "Image — Loading shimmer")
 @Composable
 private fun PreviewCharacterImageLoading() {
-    ShimmerBox(shape = CircleShape)
+    Box(
+        modifier = Modifier
+            .size(80.dp)
+            .clip(CircleShape)
+            .background(shimmerBrush())
+    )
 }
 
 @Preview(showBackground = true, name = "Image — Error state")
@@ -124,4 +100,3 @@ private fun PreviewCharacterImageErrorRounded() {
         ErrorBox(shape = RoundedCornerShape(16.dp))
     }
 }
-
