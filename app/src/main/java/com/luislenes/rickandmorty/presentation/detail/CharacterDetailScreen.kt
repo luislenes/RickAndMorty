@@ -19,10 +19,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.luislenes.rickandmorty.R
 import com.luislenes.rickandmorty.model.Character
-import com.luislenes.rickandmorty.presentation.ui.components.CharacterDetailSkeleton
-import com.luislenes.rickandmorty.presentation.ui.components.CharacterImage
-import com.luislenes.rickandmorty.presentation.ui.components.StatusBadge
-import com.luislenes.rickandmorty.presentation.ui.theme.RickAndMortyTheme
+import com.luislenes.rickandmorty.presentation.components.CharacterImage
+import com.luislenes.rickandmorty.presentation.components.StatusBadge
+import com.luislenes.rickandmorty.presentation.theme.RickAndMortyTheme
 import org.koin.androidx.compose.koinViewModel
 
 @Composable

@@ -1,4 +1,4 @@
-package com.luislenes.rickandmorty.presentation.ui.components
+package com.luislenes.rickandmorty.presentation.list
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -25,7 +25,8 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.luislenes.rickandmorty.R
-import com.luislenes.rickandmorty.presentation.ui.theme.RickAndMortyTheme
+import com.luislenes.rickandmorty.presentation.components.shimmerBrush
+import com.luislenes.rickandmorty.presentation.theme.RickAndMortyTheme
 
 @Composable
 fun CharacterListSkeleton(itemCount: Int = 8) {
@@ -95,16 +96,12 @@ private fun CharacterCardSkeleton() {
 @Preview(name = "Skeleton — Single card", showBackground = true)
 @Composable
 private fun CharacterCardSkeletonPreview() {
-    RickAndMortyTheme {
-        CharacterCardSkeleton()
-    }
+    RickAndMortyTheme { CharacterCardSkeleton() }
 }
 
 @Preview(name = "Skeleton — Full list", showBackground = true)
 @Composable
 private fun CharacterListSkeletonPreview() {
-    RickAndMortyTheme {
-        CharacterListSkeleton()
-    }
+    RickAndMortyTheme { CharacterListSkeleton() }
 }
 

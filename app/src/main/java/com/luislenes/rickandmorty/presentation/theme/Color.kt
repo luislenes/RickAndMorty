@@ -1,4 +1,4 @@
-package com.luislenes.rickandmorty.presentation.ui.theme
+package com.luislenes.rickandmorty.presentation.theme
 
 import androidx.compose.ui.graphics.Color
 
@@ -19,3 +19,4 @@ val ShimmerBase = Color(0xFFBDBDBD)
 val ShimmerHighlight = Color(0xFFE8E8E8)
 val ImageErrorBg = Color(0xFFBDBDBD)
 val ImageErrorIcon = Color(0xFF757575)
+

@@ -1,4 +1,4 @@
-package com.luislenes.rickandmorty.presentation.ui.components
+package com.luislenes.rickandmorty.presentation.detail
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -25,8 +25,9 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.luislenes.rickandmorty.R
-import com.luislenes.rickandmorty.presentation.ui.theme.RickAndMortyTheme
-import com.luislenes.rickandmorty.presentation.ui.theme.ShimmerBase
+import com.luislenes.rickandmorty.presentation.components.shimmerBrush
+import com.luislenes.rickandmorty.presentation.theme.RickAndMortyTheme
+import com.luislenes.rickandmorty.presentation.theme.ShimmerBase
 
 @Composable
 fun CharacterDetailSkeleton() {
@@ -121,8 +122,6 @@ private fun InfoRowSkeleton(
 @Preview(name = "Detail Skeleton", showBackground = true)
 @Composable
 private fun CharacterDetailSkeletonPreview() {
-    RickAndMortyTheme {
-        CharacterDetailSkeleton()
-    }
+    RickAndMortyTheme { CharacterDetailSkeleton() }
 }
 

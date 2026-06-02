@@ -1,4 +1,4 @@
-package com.luislenes.rickandmorty.presentation.ui.components
+package com.luislenes.rickandmorty.presentation.components
 
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -9,8 +9,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
-import com.luislenes.rickandmorty.presentation.ui.theme.ShimmerBase
-import com.luislenes.rickandmorty.presentation.ui.theme.ShimmerHighlight
+import com.luislenes.rickandmorty.presentation.theme.ShimmerBase
+import com.luislenes.rickandmorty.presentation.theme.ShimmerHighlight
 
 @Composable
 fun shimmerBrush(): Brush {
@@ -25,11 +25,7 @@ fun shimmerBrush(): Brush {
         label = "shimmer_translate"
     )
     return Brush.linearGradient(
-        colors = listOf(
-            ShimmerBase,
-            ShimmerHighlight,
-            ShimmerBase
-        ),
+        colors = listOf(ShimmerBase, ShimmerHighlight, ShimmerBase),
         start = Offset(translateAnim - 300f, 0f),
         end = Offset(translateAnim, 0f)
     )

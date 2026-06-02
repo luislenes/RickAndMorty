@@ -1,4 +1,4 @@
-package com.luislenes.rickandmorty.presentation.ui.components
+package com.luislenes.rickandmorty.presentation.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -17,7 +17,7 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import com.luislenes.rickandmorty.R
-import com.luislenes.rickandmorty.presentation.ui.theme.RickAndMortyTheme
+import com.luislenes.rickandmorty.presentation.theme.RickAndMortyTheme
 
 @Composable
 fun StatusBadge(status: String) {

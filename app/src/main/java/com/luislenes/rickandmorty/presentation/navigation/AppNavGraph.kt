@@ -8,8 +8,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.luislenes.rickandmorty.presentation.detail.CharacterDetailScreen
-import com.luislenes.rickandmorty.presentation.ui.CharacterListScreen
-import com.luislenes.rickandmorty.presentation.ui.theme.RickAndMortyTheme
+import com.luislenes.rickandmorty.presentation.list.CharacterListScreen
+import com.luislenes.rickandmorty.presentation.theme.RickAndMortyTheme
 
 @Composable
 fun AppNavGraph(navController: NavHostController = rememberNavController()) {

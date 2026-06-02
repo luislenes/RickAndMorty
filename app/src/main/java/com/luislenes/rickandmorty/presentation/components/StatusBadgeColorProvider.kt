@@ -1,10 +1,10 @@
-package com.luislenes.rickandmorty.presentation.ui.components
+package com.luislenes.rickandmorty.presentation.components
 
 import androidx.compose.ui.graphics.Color
-import com.luislenes.rickandmorty.presentation.ui.theme.StatusAlive
-import com.luislenes.rickandmorty.presentation.ui.theme.StatusBadgeText
-import com.luislenes.rickandmorty.presentation.ui.theme.StatusDead
-import com.luislenes.rickandmorty.presentation.ui.theme.StatusUnknown
+import com.luislenes.rickandmorty.presentation.theme.StatusAlive
+import com.luislenes.rickandmorty.presentation.theme.StatusBadgeText
+import com.luislenes.rickandmorty.presentation.theme.StatusDead
+import com.luislenes.rickandmorty.presentation.theme.StatusUnknown
 
 data class StatusBadgeColors(
     val background: Color,

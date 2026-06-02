@@ -1,4 +1,4 @@
-package com.luislenes.rickandmorty.presentation
+package com.luislenes.rickandmorty.presentation.list
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

@@ -1,4 +1,4 @@
-package com.luislenes.rickandmorty.presentation.ui
+package com.luislenes.rickandmorty.presentation.list
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -20,12 +20,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.luislenes.rickandmorty.R
 import com.luislenes.rickandmorty.model.Character
-import com.luislenes.rickandmorty.presentation.CharacterViewModel
-import com.luislenes.rickandmorty.presentation.CharactersUiState
-import com.luislenes.rickandmorty.presentation.ui.components.CharacterImage
-import com.luislenes.rickandmorty.presentation.ui.components.CharacterListSkeleton
-import com.luislenes.rickandmorty.presentation.ui.components.StatusBadge
-import com.luislenes.rickandmorty.presentation.ui.theme.RickAndMortyTheme
+import com.luislenes.rickandmorty.presentation.components.CharacterImage
+import com.luislenes.rickandmorty.presentation.components.StatusBadge
+import com.luislenes.rickandmorty.presentation.theme.RickAndMortyTheme
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -73,7 +70,6 @@ private fun CharacterTopBar() {
         )
     )
 }
-
 
 @Composable
 private fun ErrorContent(message: String, onRetry: () -> Unit) {
@@ -153,20 +149,12 @@ fun CharacterCard(character: Character, onClick: () -> Unit = {}) {
     }
 }
 
-// ---------------------------------------------------------------------------
-// Preview data
-// ---------------------------------------------------------------------------
-
 private val previewCharacters = listOf(
     Character(1, "Rick Sanchez",  "Alive",   "Human",       "", "Male",   "", "Earth (C-137)", "Citadel of Ricks"),
     Character(2, "Morty Smith",   "Alive",   "Human",       "", "Male",   "", "Earth (C-137)", "Earth (C-137)"),
     Character(3, "Birdperson",    "Dead",    "Bird-Person", "", "Male",   "", "Bird World",    "Tammy's Ship"),
     Character(4, "Schleemypants", "unknown", "Schleem",     "", "unknown","", "unknown",       "unknown"),
 )
-
-// ---------------------------------------------------------------------------
-// List states
-// ---------------------------------------------------------------------------
 
 @Preview(name = "List — Loading", showBackground = true)
 @Composable
@@ -178,10 +166,7 @@ private fun CharacterListLoadingPreview() {
 @Composable
 private fun CharacterListErrorPreview() {
     RickAndMortyTheme {
-        ErrorContent(
-            message = stringResource(R.string.error_preview_connection),
-            onRetry = {}
-        )
+        ErrorContent(message = stringResource(R.string.error_preview_connection), onRetry = {})
     }
 }
 
@@ -193,15 +178,9 @@ private fun CharacterListSuccessPreview() {
     }
 }
 
-// ---------------------------------------------------------------------------
-// Card states
-// ---------------------------------------------------------------------------
-
 @Preview(name = "Card — Alive", showBackground = true)
 @Composable
 private fun CharacterCardPreview() {
-    RickAndMortyTheme {
-        CharacterCard(character = previewCharacters[0])
-    }
+    RickAndMortyTheme { CharacterCard(character = previewCharacters[0]) }
 }
 

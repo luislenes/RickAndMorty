@@ -1,4 +1,4 @@
-package com.luislenes.rickandmorty.presentation.ui.components
+package com.luislenes.rickandmorty.presentation.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -22,8 +22,8 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.SubcomposeAsyncImage
 import coil3.compose.SubcomposeAsyncImageContent
 import com.luislenes.rickandmorty.R
-import com.luislenes.rickandmorty.presentation.ui.theme.ImageErrorBg
-import com.luislenes.rickandmorty.presentation.ui.theme.ImageErrorIcon
+import com.luislenes.rickandmorty.presentation.theme.ImageErrorBg
+import com.luislenes.rickandmorty.presentation.theme.ImageErrorIcon
 
 @Composable
 fun CharacterImage(
@@ -48,12 +48,8 @@ fun CharacterImage(
                     .background(shimmerBrush())
             )
         },
-        error = {
-            ErrorBox(shape = shape)
-        },
-        success = {
-            SubcomposeAsyncImageContent()
-        }
+        error = { ErrorBox(shape = shape) },
+        success = { SubcomposeAsyncImageContent() }
     )
 }
 
@@ -88,15 +84,12 @@ private fun PreviewCharacterImageLoading() {
 @Preview(showBackground = true, name = "Image — Error state")
 @Composable
 private fun PreviewCharacterImageError() {
-    Box(modifier = Modifier.size(80.dp)) {
-        ErrorBox(shape = CircleShape)
-    }
+    Box(modifier = Modifier.size(80.dp)) { ErrorBox(shape = CircleShape) }
 }
 
 @Preview(showBackground = true, name = "Image — Error state (rounded)")
 @Composable
 private fun PreviewCharacterImageErrorRounded() {
-    Box(modifier = Modifier.size(200.dp)) {
-        ErrorBox(shape = RoundedCornerShape(16.dp))
-    }
+    Box(modifier = Modifier.size(200.dp)) { ErrorBox(shape = RoundedCornerShape(16.dp)) }
 }
+
