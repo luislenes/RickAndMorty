@@ -9,8 +9,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
-import com.luislenes.rickandmorty.presentation.ui.theme.ImagePlaceholderBg
-import com.luislenes.rickandmorty.presentation.ui.theme.ImagePlaceholderShimmer
+import com.luislenes.rickandmorty.presentation.ui.theme.ShimmerBase
+import com.luislenes.rickandmorty.presentation.ui.theme.ShimmerHighlight
 
 @Composable
 fun shimmerBrush(): Brush {
@@ -26,9 +26,9 @@ fun shimmerBrush(): Brush {
     )
     return Brush.linearGradient(
         colors = listOf(
-            ImagePlaceholderBg,
-            ImagePlaceholderShimmer,
-            ImagePlaceholderBg
+            ShimmerBase,
+            ShimmerHighlight,
+            ShimmerBase
         ),
         start = Offset(translateAnim - 300f, 0f),
         end = Offset(translateAnim, 0f)

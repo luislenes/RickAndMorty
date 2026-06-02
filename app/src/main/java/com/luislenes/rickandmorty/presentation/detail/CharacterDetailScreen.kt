@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.luislenes.rickandmorty.R
 import com.luislenes.rickandmorty.model.Character
+import com.luislenes.rickandmorty.presentation.ui.components.CharacterDetailSkeleton
 import com.luislenes.rickandmorty.presentation.ui.components.CharacterImage
 import com.luislenes.rickandmorty.presentation.ui.components.StatusBadge
 import com.luislenes.rickandmorty.presentation.ui.theme.RickAndMortyTheme
@@ -47,7 +48,7 @@ fun CharacterDetailScreen(
                 .padding(innerPadding)
         ) {
             when (val state = uiState) {
-                is CharacterDetailUiState.Loading -> LoadingContent()
+                is CharacterDetailUiState.Loading -> CharacterDetailSkeleton()
                 is CharacterDetailUiState.Error   -> ErrorContent(
                     message = state.message,
                     onRetry = viewModel::fetchCharacter
@@ -84,12 +85,6 @@ private fun CharacterDetailTopBar(title: String, onBackClick: () -> Unit) {
     )
 }
 
-@Composable
-private fun LoadingContent() {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        CircularProgressIndicator()
-    }
-}
 
 @Composable
 private fun ErrorContent(message: String, onRetry: () -> Unit) {
@@ -208,7 +203,7 @@ private val previewCharacterWithType = Character(
 @Preview(name = "Detail — Loading", showBackground = true)
 @Composable
 private fun CharacterDetailLoadingPreview() {
-    RickAndMortyTheme { LoadingContent() }
+    RickAndMortyTheme { CharacterDetailSkeleton() }
 }
 
 @Preview(name = "Detail — Error", showBackground = true)
