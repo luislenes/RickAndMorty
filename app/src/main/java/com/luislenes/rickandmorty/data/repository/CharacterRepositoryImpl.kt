@@ -1,17 +1,25 @@
 package com.luislenes.rickandmorty.data.repository
 
+import androidx.paging.ExperimentalPagingApi
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
+import androidx.paging.map
+import com.luislenes.rickandmorty.data.local.db.RickAndMortyDatabase
+import com.luislenes.rickandmorty.data.local.mapper.toDomain
+import com.luislenes.rickandmorty.data.local.mapper.toEntity
 import com.luislenes.rickandmorty.data.remote.api.RickAndMortyApi
 import com.luislenes.rickandmorty.data.remote.dto.CharacterDto
-import com.luislenes.rickandmorty.data.remote.paging.CharacterPagingSource
+import com.luislenes.rickandmorty.data.remote.paging.CharacterRemoteMediator
 import com.luislenes.rickandmorty.model.Character
 import com.luislenes.rickandmorty.model.repository.CharacterRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
+@OptIn(ExperimentalPagingApi::class)
 class CharacterRepositoryImpl(
-    private val api: RickAndMortyApi
+    private val api: RickAndMortyApi,
+    private val database: RickAndMortyDatabase
 ) : CharacterRepository {
 
     override fun getCharactersStream(): Flow<PagingData<Character>> =
@@ -20,8 +28,9 @@ class CharacterRepositoryImpl(
                 pageSize           = PAGE_SIZE,
                 enablePlaceholders = false
             ),
-            pagingSourceFactory = { CharacterPagingSource(api) }
-        ).flow
+            remoteMediator      = CharacterRemoteMediator(api, database),
+            pagingSourceFactory = { database.characterDao().pagingSource() }
+        ).flow.map { pagingData -> pagingData.map { it.toDomain() } }
 
     override suspend fun getCharacterById(id: Int): Result<Character> = runCatching {
         api.getCharacterById(id).toDomain()
