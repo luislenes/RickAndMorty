@@ -1,6 +1,6 @@
 # Rick & Morty — Android App
 
-Android application that consumes the [Rick and Morty API](https://rickandmortyapi.com/api) and displays a list of characters with navigation to a detail screen. The project demonstrates clean architecture, reactive state management and solid technical decisions in modern Kotlin.
+Android application that consumes the [Rick and Morty API](https://rickandmortyapi.com/api) and displays a paginated list of characters (~830 total across 42 pages) with navigation to a detail screen. The project demonstrates clean architecture, reactive state management and solid technical decisions in modern Kotlin.
 
 ---
 
@@ -24,8 +24,9 @@ Android application that consumes the [Rick and Morty API](https://rickandmortya
 |---|---|
 | **MVVM + Clean Architecture** | Clear separation of concerns across 3 layers (data, domain, presentation). Each layer can be tested in isolation. |
 | **StateFlow** | Reactive state emitter, lifecycle-aware when combined with `collectAsStateWithLifecycle()`. Replaces `LiveData` while being fully idiomatic Kotlin. |
-| **Sealed class UiState** | Represents mutually exclusive states (`Loading`, `Success`, `Error`). The compiler enforces exhaustive `when` expressions, eliminating impossible states. |
+| **Sealed class UiState** | Represents mutually exclusive states (`Loading`, `Error`). The compiler enforces exhaustive `when` expressions. For the character list the `Success` state is replaced by Paging 3's own `LoadState`, which eliminates the need for a custom success wrapper. |
 | **Use Cases** | Each use case has a single responsibility. They act as the correct extension point for future business logic (filtering, sorting) without touching the repository or ViewModel. |
+| **Paging 3** | Handles progressive loading, per-page `LoadState` (refresh / append), in-memory cache via `cachedIn(viewModelScope)` and automatic retry — without any manual offset or page tracking logic in the ViewModel. |
 
 ### UI
 | Technology | Version | Justification |
@@ -40,6 +41,7 @@ Android application that consumes the [Rick and Morty API](https://rickandmortya
 | **Retrofit 2** | 2.11.0 | Industry-standard library for consuming REST APIs on Android. Native support for `suspend fun` without additional adapters. |
 | **OkHttp Logging Interceptor** | 4.12.0 | Allows inspecting requests/responses in Logcat during development. Can be excluded or reduced in production. |
 | **Gson Converter** | 2.11.0 | Automatic JSON serialization/deserialization to DTOs with `@SerializedName` annotations. |
+| **Paging 3** | 3.3.6 | Provides `PagingSource`, `Pager` and `LazyPagingItems` to implement infinite scroll with progressive loading, per-page `LoadState` and rotation-safe caching via `cachedIn`. |
 
 ### Images
 | Technology | Version | Justification |
@@ -67,12 +69,14 @@ com.luislenes.rickandmorty/
 ├── data/                               # Data layer
 │   ├── remote/
 │   │   ├── api/RickAndMortyApi.kt      # Retrofit interface
-│   │   └── dto/                        # Network models (DTOs)
-│   │       ├── CharacterDto.kt
-│   │       ├── CharacterResponseDto.kt
-│   │       └── LocationDto.kt
+│   │   ├── dto/                        # Network models (DTOs)
+│   │   │   ├── CharacterDto.kt
+│   │   │   ├── CharacterResponseDto.kt # Includes InfoDto (pages, next)
+│   │   │   └── LocationDto.kt
+│   │   └── paging/
+│   │       └── CharacterPagingSource.kt  # PagingSource — page key + DTO→Domain
 │   └── repository/
-│       └── CharacterRepositoryImpl.kt  # Implementation + DTO → Domain mapping
+│       └── CharacterRepositoryImpl.kt  # Pager factory + getCharacterById
 │
 ├── model/                              # Domain layer
 │   ├── Character.kt                    # Pure domain entity (no frameworks)
@@ -89,22 +93,28 @@ com.luislenes.rickandmorty/
 │   └── ViewModelModule.kt
 │
 ├── presentation/                       # Presentation layer
-│   ├── CharactersUiState.kt
-│   ├── CharacterViewModel.kt
 │   ├── navigation/
 │   │   ├── Screen.kt                   # Route definitions
 │   │   └── AppNavGraph.kt              # Main NavHost + theme root
-│   ├── ui/
-│   │   ├── CharacterListScreen.kt      # List screen + state previews
-│   │   ├── theme/
-│   │   │   └── Color.kt               # Palette + StatusBadge color tokens
-│   │   └── components/
-│   │       ├── StatusBadge.kt          # Reusable composable
-│   │       └── StatusBadgeColorProvider.kt  # Color logic isolated from UI
-│   └── detail/
-│       ├── CharacterDetailUiState.kt
-│       ├── CharacterDetailViewModel.kt
-│       └── CharacterDetailScreen.kt    # Detail screen + state previews
+│   ├── components/                     # Shared composables
+│   │   ├── CharacterImage.kt           # Image with loading/error states
+│   │   ├── ShimmerBrush.kt             # Animated shimmer brush (gray tones)
+│   │   ├── StatusBadge.kt              # Reusable status badge composable
+│   │   └── StatusBadgeColorProvider.kt # Color logic isolated from UI
+│   ├── list/
+│   │   ├── CharactersUiState.kt        # Loading / Error (Success replaced by LoadState)
+│   │   ├── CharacterViewModel.kt       # Flow<PagingData>.cachedIn(viewModelScope)
+│   │   ├── CharacterListScreen.kt      # LazyPagingItems + append footer
+│   │   └── CharacterCardSkeleton.kt    # Shimmer skeleton for list
+│   ├── detail/
+│   │   ├── CharacterDetailUiState.kt
+│   │   ├── CharacterDetailViewModel.kt
+│   │   ├── CharacterDetailScreen.kt    # Detail screen + state previews
+│   │   └── CharacterDetailSkeleton.kt  # Shimmer skeleton for detail
+│   └── theme/
+│       ├── Color.kt                    # Palette + StatusBadge + Shimmer color tokens
+│       ├── Theme.kt
+│       └── Type.kt
 │
 ├── RickAndMortyApp.kt                  # Application with Koin bootstrap
 │
@@ -132,19 +142,25 @@ src/test/
 ```
 API (Retrofit)
   └─▶ CharacterDto (data/dto)
-        └─▶ CharacterRepositoryImpl.toDomain()
-              └─▶ Character (domain entity)
-                    └─▶ UseCase
-                          └─▶ ViewModel (StateFlow<UiState>)
-                                └─▶ Composable (collectAsStateWithLifecycle)
+        └─▶ CharacterPagingSource.toDomain()    ← list flow
+        │         └─▶ PagingData<Character>
+        │                 └─▶ GetCharactersUseCase
+        │                       └─▶ ViewModel (Flow<PagingData>.cachedIn)
+        │                             └─▶ Composable (collectAsLazyPagingItems)
+        │
+        └─▶ CharacterRepositoryImpl.toDomain()  ← detail flow
+                  └─▶ Character (domain entity)
+                        └─▶ GetCharacterByIdUseCase
+                              └─▶ DetailViewModel (StateFlow<UiState>)
+                                    └─▶ Composable (collectAsStateWithLifecycle)
 ```
 
 ---
 
 ## Improvement Suggestions
 
-### 1. Pagination with Paging 3
-The API returns the first page (~20 characters). Integrating `androidx.paging:paging-compose` would enable infinite scroll with progressive loading, per-page state management and in-memory caching without manual offset logic.
+### ~~1. Pagination with Paging 3~~ ✅ Implemented
+Infinite scroll with progressive loading is fully implemented using `CharacterPagingSource`, `Pager` and `LazyPagingItems`. The list loads all ~830 characters across 42 pages with per-page `LoadState` handling (refresh, append, retry) and rotation-safe caching via `cachedIn(viewModelScope)`.
 
 ### 2. Local cache with Room
 Adding a Room database between the API and the repository, implementing an **offline-first** pattern: show cached data immediately and refresh in the background. This improves the offline experience and reduces repeated network calls.
