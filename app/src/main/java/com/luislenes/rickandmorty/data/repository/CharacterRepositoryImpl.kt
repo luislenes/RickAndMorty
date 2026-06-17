@@ -32,9 +32,10 @@ class CharacterRepositoryImpl(
             pagingSourceFactory = { database.characterDao().pagingSource() }
         ).flow.map { pagingData -> pagingData.map { it.toDomain() } }
 
-    override suspend fun getCharacterById(id: Int): Result<Character> = runCatching {
-        api.getCharacterById(id).toDomain()
-    }
+    override suspend fun getCharacterById(id: Int): Result<Character> =
+        database.characterDao().getById(id)
+            ?.let { Result.success(it.toDomain()) }
+            ?: runCatching { api.getCharacterById(id).toDomain() }
 
     companion object {
         private const val PAGE_SIZE = 20

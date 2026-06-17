@@ -21,5 +21,8 @@ interface CharacterDao {
 
     @Query("SELECT COUNT(*) FROM characters")
     suspend fun count(): Int
+
+    @Query("SELECT * FROM characters WHERE id = :id LIMIT 1")
+    suspend fun getById(id: Int): CharacterEntity?
 }
 
