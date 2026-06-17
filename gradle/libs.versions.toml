@@ -17,7 +17,7 @@ mockk = "1.14.0"
 coroutinesTest = "1.10.1"
 paging = "3.3.6"
 room = "2.7.1"
-ksp = "2.2.10-1.0.31"
+ksp = "2.2.10-2.0.2"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
