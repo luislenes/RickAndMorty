@@ -2,29 +2,16 @@ package com.luislenes.rickandmorty.presentation.list
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.paging.PagingData
+import androidx.paging.cachedIn
+import com.luislenes.rickandmorty.model.Character
 import com.luislenes.rickandmorty.model.usecase.GetCharactersUseCase
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.Flow
 
 class CharacterViewModel(
-    private val getCharactersUseCase: GetCharactersUseCase
+    getCharactersUseCase: GetCharactersUseCase
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow<CharactersUiState>(CharactersUiState.Loading)
-    val uiState: StateFlow<CharactersUiState> = _uiState.asStateFlow()
-
-    init {
-        fetchCharacters()
-    }
-
-    fun fetchCharacters() {
-        viewModelScope.launch {
-            _uiState.value = CharactersUiState.Loading
-            getCharactersUseCase()
-                .onSuccess { _uiState.value = CharactersUiState.Success(it) }
-                .onFailure { _uiState.value = CharactersUiState.Error(it.message.orEmpty()) }
-        }
-    }
+    val characters: Flow<PagingData<Character>> = getCharactersUseCase()
+        .cachedIn(viewModelScope)
 }

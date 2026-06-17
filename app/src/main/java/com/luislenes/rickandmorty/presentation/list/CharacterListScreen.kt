@@ -3,12 +3,10 @@ package com.luislenes.rickandmorty.presentation.list
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
@@ -17,7 +15,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.paging.LoadState
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
 import com.luislenes.rickandmorty.R
 import com.luislenes.rickandmorty.model.Character
 import com.luislenes.rickandmorty.presentation.components.CharacterImage
@@ -30,7 +30,7 @@ fun CharacterListScreen(
     onCharacterClick: (Int) -> Unit,
     viewModel: CharacterViewModel = koinViewModel()
 ) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val characters = viewModel.characters.collectAsLazyPagingItems()
 
     Scaffold(topBar = { CharacterTopBar() }) { innerPadding ->
         Box(
@@ -38,14 +38,14 @@ fun CharacterListScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            when (val state = uiState) {
-                is CharactersUiState.Loading -> CharacterListSkeleton()
-                is CharactersUiState.Error   -> ErrorContent(
-                    message = state.message,
-                    onRetry = viewModel::fetchCharacters
+            when (val refresh = characters.loadState.refresh) {
+                is LoadState.Loading -> CharacterListSkeleton()
+                is LoadState.Error   -> ErrorContent(
+                    message = refresh.error.message.orEmpty(),
+                    onRetry = { characters.retry() }
                 )
-                is CharactersUiState.Success -> CharacterList(
-                    characters = state.characters,
+                else -> CharacterList(
+                    characters       = characters,
                     onCharacterClick = onCharacterClick
                 )
             }
@@ -59,13 +59,13 @@ private fun CharacterTopBar() {
     TopAppBar(
         title = {
             Text(
-                text = stringResource(R.string.app_bar_title),
-                style = MaterialTheme.typography.titleLarge,
+                text       = stringResource(R.string.app_bar_title),
+                style      = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
         },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            containerColor    = MaterialTheme.colorScheme.primaryContainer,
             titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
         )
     )
@@ -90,18 +90,53 @@ private fun ErrorContent(message: String, onRetry: () -> Unit) {
 
 @Composable
 private fun CharacterList(
-    characters: List<Character>,
+    characters: LazyPagingItems<Character>,
     onCharacterClick: (Int) -> Unit
 ) {
     LazyColumn(
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+        contentPadding      = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        items(items = characters, key = { it.id }) { character ->
-            CharacterCard(
-                character = character,
-                onClick = { onCharacterClick(character.id) }
-            )
+        items(
+            count = characters.itemCount,
+            key   = { index -> characters.peek(index)?.id ?: index }
+        ) { index ->
+            characters[index]?.let { character ->
+                CharacterCard(
+                    character = character,
+                    onClick   = { onCharacterClick(character.id) }
+                )
+            }
+        }
+
+        item {
+            when (val append = characters.loadState.append) {
+                is LoadState.Loading -> {
+                    Box(
+                        modifier        = Modifier.fillMaxWidth().padding(16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                }
+                is LoadState.Error -> {
+                    Column(
+                        modifier            = Modifier.fillMaxWidth().padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text  = append.error.message.orEmpty().ifBlank { stringResource(R.string.error_unknown) },
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Button(onClick = { characters.retry() }) {
+                            Text(stringResource(R.string.action_retry))
+                        }
+                    }
+                }
+                else -> Unit
+            }
         }
     }
 }
@@ -109,36 +144,32 @@ private fun CharacterList(
 @Composable
 fun CharacterCard(character: Character, onClick: () -> Unit = {}) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick),
-        shape = RoundedCornerShape(dimensionResource(R.dimen.card_corner_radius)),
+        modifier  = Modifier.fillMaxWidth().clickable(onClick = onClick),
+        shape     = RoundedCornerShape(dimensionResource(R.dimen.card_corner_radius)),
         elevation = CardDefaults.cardElevation(defaultElevation = dimensionResource(R.dimen.card_elevation))
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
+            modifier          = Modifier.fillMaxWidth().padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             CharacterImage(
-                imageUrl = character.imageUrl,
+                imageUrl           = character.imageUrl,
                 contentDescription = stringResource(R.string.content_desc_character_avatar, character.name),
-                size = dimensionResource(R.dimen.character_avatar_size),
-                shape = CircleShape
+                size               = dimensionResource(R.dimen.character_avatar_size),
+                shape              = CircleShape
             )
             Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = character.name,
-                    style = MaterialTheme.typography.titleMedium,
+                    text       = character.name,
+                    style      = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    maxLines   = 1,
+                    overflow   = TextOverflow.Ellipsis
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = character.species,
+                    text  = character.species,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -149,12 +180,7 @@ fun CharacterCard(character: Character, onClick: () -> Unit = {}) {
     }
 }
 
-private val previewCharacters = listOf(
-    Character(1, "Rick Sanchez",  "Alive",   "Human",       "", "Male",   "", "Earth (C-137)", "Citadel of Ricks"),
-    Character(2, "Morty Smith",   "Alive",   "Human",       "", "Male",   "", "Earth (C-137)", "Earth (C-137)"),
-    Character(3, "Birdperson",    "Dead",    "Bird-Person", "", "Male",   "", "Bird World",    "Tammy's Ship"),
-    Character(4, "Schleemypants", "unknown", "Schleem",     "", "unknown","", "unknown",       "unknown"),
-)
+private val previewCharacter = Character(1, "Rick Sanchez", "Alive", "Human", "", "Male", "", "Earth (C-137)", "Citadel of Ricks")
 
 @Preview(name = "List — Loading", showBackground = true)
 @Composable
@@ -170,17 +196,8 @@ private fun CharacterListErrorPreview() {
     }
 }
 
-@Preview(name = "List — Success", showBackground = true)
-@Composable
-private fun CharacterListSuccessPreview() {
-    RickAndMortyTheme {
-        CharacterList(characters = previewCharacters, onCharacterClick = {})
-    }
-}
-
 @Preview(name = "Card — Alive", showBackground = true)
 @Composable
 private fun CharacterCardPreview() {
-    RickAndMortyTheme { CharacterCard(character = previewCharacters[0]) }
+    RickAndMortyTheme { CharacterCard(character = previewCharacter) }
 }
-
