@@ -1,6 +1,6 @@
 # Rick & Morty — Android App
 
-Android application that consumes the [Rick and Morty API](https://rickandmortyapi.com/api) and displays a paginated list of characters (~830 total across 42 pages) with navigation to a detail screen. The project demonstrates clean architecture, reactive state management and solid technical decisions in modern Kotlin.
+Android application that consumes the [Rick and Morty API](https://rickandmortyapi.com/api) and displays a paginated list of characters (~830 total across 42 pages) with navigation to a detail screen. The app works **offline-first**: characters are cached in a local Room database and served from it even without network. The project demonstrates clean architecture, reactive state management and solid technical decisions in modern Kotlin.
 
 ---
 
@@ -26,7 +26,7 @@ Android application that consumes the [Rick and Morty API](https://rickandmortya
 | **StateFlow** | Reactive state emitter, lifecycle-aware when combined with `collectAsStateWithLifecycle()`. Replaces `LiveData` while being fully idiomatic Kotlin. |
 | **Sealed class UiState** | Represents mutually exclusive states (`Loading`, `Error`). The compiler enforces exhaustive `when` expressions. For the character list the `Success` state is replaced by Paging 3's own `LoadState`, which eliminates the need for a custom success wrapper. |
 | **Use Cases** | Each use case has a single responsibility. They act as the correct extension point for future business logic (filtering, sorting) without touching the repository or ViewModel. |
-| **Paging 3** | Handles progressive loading, per-page `LoadState` (refresh / append), in-memory cache via `cachedIn(viewModelScope)` and automatic retry — without any manual offset or page tracking logic in the ViewModel. |
+| **Paging 3** | Handles progressive loading, per-page `LoadState` (refresh / append), in-memory cache via `cachedIn(viewModelScope)` and automatic retry — without any manual offset or page tracking logic in the ViewModel. `RemoteMediator` coordinates fetching from API and persisting to Room. |
 
 ### UI
 | Technology | Version | Justification |
@@ -43,7 +43,13 @@ Android application that consumes the [Rick and Morty API](https://rickandmortya
 | **Gson Converter** | 2.11.0 | Automatic JSON serialization/deserialization to DTOs with `@SerializedName` annotations. |
 | **Paging 3** | 3.3.6 | Provides `PagingSource`, `Pager` and `LazyPagingItems` to implement infinite scroll with progressive loading, per-page `LoadState` and rotation-safe caching via `cachedIn`. |
 
-### Images
+### Local Storage
+| Technology | Version | Justification |
+|---|---|---|
+| **Room** | 2.7.1 | Official SQLite abstraction for Android. Provides compile-time verified queries, coroutine-native `suspend` DAOs and a `PagingSource` integration that connects directly to Paging 3's `RemoteMediator` pattern for offline-first caching. |
+| **KSP** | 2.2.10-1.0.31 | Kotlin Symbol Processing — replaces KAPT for Room's code generation. Faster incremental builds and fully Kotlin-native (no Java stubs). |
+
+
 | Technology | Version | Justification |
 |---|---|---|
 | **Coil 3** | 3.2.0 | 100% Kotlin image loading library with native support for Coroutines and Compose (`AsyncImage`). Lighter than Glide/Picasso and better integrated with the Kotlin ecosystem. |
@@ -74,9 +80,14 @@ com.luislenes.rickandmorty/
 │   │   │   ├── CharacterResponseDto.kt # Includes InfoDto (pages, next)
 │   │   │   └── LocationDto.kt
 │   │   └── paging/
-│   │       └── CharacterPagingSource.kt  # PagingSource — page key + DTO→Domain
+│   │       └── CharacterRemoteMediator.kt  # Fetches API pages → stores in Room
+│   ├── local/                          # Room persistence
+│   │   ├── db/RickAndMortyDatabase.kt  # @Database entry point
+│   │   ├── dao/CharacterDao.kt         # pagingSource(), insertAll(), clearAll()
+│   │   ├── entity/CharacterEntity.kt   # @Entity — SQLite table
+│   │   └── mapper/CharacterEntityMapper.kt  # entity↔domain + DTO→entity
 │   └── repository/
-│       └── CharacterRepositoryImpl.kt  # Pager factory + getCharacterById
+│       └── CharacterRepositoryImpl.kt  # Pager(remoteMediator, Room pagingSource)
 │
 ├── model/                              # Domain layer
 │   ├── Character.kt                    # Pure domain entity (no frameworks)
@@ -86,8 +97,9 @@ com.luislenes.rickandmorty/
 │       ├── GetCharactersUseCase.kt
 │       └── GetCharacterByIdUseCase.kt
 │
-├── di/                                 # Dependency injection (Koin)
+│   ├── di/                                 # Dependency injection (Koin)
 │   ├── NetworkModule.kt
+│   ├── DatabaseModule.kt               # Room + CharacterDao as single
 │   ├── RepositoryModule.kt
 │   ├── DomainModule.kt
 │   └── ViewModelModule.kt
@@ -141,18 +153,22 @@ src/test/
 
 ```
 API (Retrofit)
-  └─▶ CharacterDto (data/dto)
-        └─▶ CharacterPagingSource.toDomain()    ← list flow
-        │         └─▶ PagingData<Character>
-        │                 └─▶ GetCharactersUseCase
-        │                       └─▶ ViewModel (Flow<PagingData>.cachedIn)
-        │                             └─▶ Composable (collectAsLazyPagingItems)
-        │
-        └─▶ CharacterRepositoryImpl.toDomain()  ← detail flow
-                  └─▶ Character (domain entity)
-                        └─▶ GetCharacterByIdUseCase
-                              └─▶ DetailViewModel (StateFlow<UiState>)
-                                    └─▶ Composable (collectAsStateWithLifecycle)
+  └─▶ CharacterRemoteMediator          ← triggers on REFRESH / APPEND
+        ├─▶ CharacterDao.insertAll()    ← persists to Room
+        └─▶ Room (source of truth)
+              └─▶ CharacterDao.pagingSource()
+                    └─▶ PagingData<CharacterEntity>
+                          └─▶ .map { it.toDomain() }
+                                └─▶ GetCharactersUseCase
+                                      └─▶ ViewModel (Flow<PagingData>.cachedIn)
+                                            └─▶ Composable (collectAsLazyPagingItems)
+
+API (Retrofit)
+  └─▶ CharacterRepositoryImpl.getCharacterById()   ← detail flow (no cache)
+        └─▶ Character (domain entity)
+              └─▶ GetCharacterByIdUseCase
+                    └─▶ DetailViewModel (StateFlow<UiState>)
+                          └─▶ Composable (collectAsStateWithLifecycle)
 ```
 
 ---
@@ -162,8 +178,8 @@ API (Retrofit)
 ### ~~1. Pagination with Paging 3~~ ✅ Implemented
 Infinite scroll with progressive loading is fully implemented using `CharacterPagingSource`, `Pager` and `LazyPagingItems`. The list loads all ~830 characters across 42 pages with per-page `LoadState` handling (refresh, append, retry) and rotation-safe caching via `cachedIn(viewModelScope)`.
 
-### 2. Local cache with Room
-Adding a Room database between the API and the repository, implementing an **offline-first** pattern: show cached data immediately and refresh in the background. This improves the offline experience and reduces repeated network calls.
+### ~~2. Local cache with Room~~ ✅ Implemented
+Offline-first pattern is fully implemented using Room 2.7.1 + `RemoteMediator`. The API fetches pages and stores them in a local SQLite database (`characters` table). Room's `PagingSource` is the single source of truth for the list. On subsequent opens, data is served from Room instantly while the mediator refreshes in the background. Characters remain visible without a network connection as long as the app has fetched them at least once.
 
 ### 3. Complete the test coverage
 Data and domain layers are already covered with unit tests (19 tests). The remaining layers:
