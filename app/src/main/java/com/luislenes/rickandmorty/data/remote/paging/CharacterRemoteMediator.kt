@@ -16,12 +16,6 @@ class CharacterRemoteMediator(
     private val database: RickAndMortyDatabase
 ) : RemoteMediator<Int, CharacterEntity>() {
 
-    override suspend fun initialize(): InitializeAction =
-        if (database.characterDao().count() > 0) {
-            InitializeAction.SKIP_INITIAL_REFRESH
-        } else {
-            InitializeAction.LAUNCH_INITIAL_REFRESH
-        }
 
     override suspend fun load(
         loadType: LoadType,
