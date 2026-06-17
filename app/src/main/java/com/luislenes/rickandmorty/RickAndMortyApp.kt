@@ -1,6 +1,7 @@
 package com.luislenes.rickandmorty
 
 import android.app.Application
+import com.luislenes.rickandmorty.di.databaseModule
 import com.luislenes.rickandmorty.di.domainModule
 import com.luislenes.rickandmorty.di.networkModule
 import com.luislenes.rickandmorty.di.repositoryModule
@@ -17,7 +18,7 @@ class RickAndMortyApp : Application() {
         startKoin {
             androidLogger(Level.DEBUG)
             androidContext(this@RickAndMortyApp)
-            modules(networkModule, repositoryModule, domainModule, viewModelModule)
+            modules(networkModule, databaseModule, repositoryModule, domainModule, viewModelModule)
         }
     }
 }
