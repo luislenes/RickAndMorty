@@ -38,9 +38,11 @@ fun CharacterListScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            when (val refresh = characters.loadState.refresh) {
-                is LoadState.Loading -> CharacterListSkeleton()
-                is LoadState.Error   -> ErrorContent(
+            val refresh = characters.loadState.refresh
+            val isEmpty = characters.itemCount == 0
+            when {
+                refresh is LoadState.Loading && isEmpty -> CharacterListSkeleton()
+                refresh is LoadState.Error && isEmpty   -> ErrorContent(
                     message = refresh.error.message.orEmpty(),
                     onRetry = { characters.retry() }
                 )
